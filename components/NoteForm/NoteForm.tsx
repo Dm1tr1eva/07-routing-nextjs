@@ -13,6 +13,7 @@ interface NoteFormValues {
 
 interface NoteFormProps {
   onCancel: () => void;
+  onSuccess?: () => void;
 }
 
 const validationSchema = Yup.object().shape({
@@ -26,13 +27,15 @@ const validationSchema = Yup.object().shape({
     .required("Tag is required"),
 });
 
-export default function NoteForm({ onCancel }: NoteFormProps) {
+export default function NoteForm({ onCancel, onSuccess }: NoteFormProps) {
   const queryClient = useQueryClient();
 
   const createNoteMutation = useMutation({
     mutationFn: (noteData: CreateNoteRequest) => createNote(noteData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
+      queryClient.invalidateQueries({ queryKey: ["filterNotes"] });
+      onSuccess?.();
       onCancel();
     },
   });

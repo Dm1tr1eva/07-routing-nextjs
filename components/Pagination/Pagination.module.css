@@ -15,6 +15,8 @@
   min-width: 36px;
   height: 36px;
   transition: background-color 0.2s ease, color 0.2s ease;
+  padding-left: 6px;
+  padding-right: 6px;
 }
 
 .pagination li a {

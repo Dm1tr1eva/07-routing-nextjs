@@ -24,6 +24,8 @@
   font-weight: 600;
   margin: 0 0 8px 0;
   color: #212529;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .content {

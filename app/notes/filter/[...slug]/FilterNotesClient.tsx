@@ -4,21 +4,22 @@ import { useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useDebouncedCallback } from "use-debounce";
 import NoteList from "@/components/NoteList/NoteList";
-import CreateButton from "@/components/CreateButton/CreateButton";
-import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
+import SearchBox from "@/components/SearchBox/SearchBox";
+import CreateButton from "@/components/CreateButton/CreateButton";
 import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 import { fetchNotes } from "@/lib/api";
-import css from "./NotesPage.module.css";
+import css from "./FilterNotesPage.module.css";
 
 const NOTES_PER_PAGE = 12;
 
 type Props = {
+  tag?: string;
   initialPage?: number;
 };
 
-export default function NotesClient({ initialPage = 1 }: Props) {
+export default function FilterNotesClient({ tag, initialPage = 1 }: Props) {
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,11 +30,12 @@ export default function NotesClient({ initialPage = 1 }: Props) {
     isError,
     error,
   } = useQuery({
-    queryKey: ["notes", currentPage, searchQuery],
+    queryKey: ["filterNotes", tag, currentPage, searchQuery],
     queryFn: () =>
       fetchNotes({
         page: currentPage,
         perPage: NOTES_PER_PAGE,
+        tag: tag || undefined,
         search: searchQuery || undefined,
       }),
     placeholderData: keepPreviousData,
@@ -53,8 +55,6 @@ export default function NotesClient({ initialPage = 1 }: Props) {
     setCurrentPage(pageNumber);
   };
 
-  const pageCount = notesData?.totalPages ?? 0;
-
   const handleCreateNote = () => {
     setIsModalOpen(true);
   };
@@ -62,6 +62,14 @@ export default function NotesClient({ initialPage = 1 }: Props) {
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
+
+  const pageCount = notesData?.totalPages ?? 0;
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error: {error?.message}</div>;
+
+  const notes = notesData?.notes ?? [];
+  const hasNotes = notes.length > 0;
 
   return (
     <div className={css.app}>
@@ -78,11 +86,17 @@ export default function NotesClient({ initialPage = 1 }: Props) {
         <CreateButton onClick={handleCreateNote} />
       </header>
 
-      <section>
-        {isLoading && <p>Loading notes...</p>}
-        {isError && <p>Error: {error?.message}</p>}
-
-        {notesData && <NoteList notes={notesData.notes} />}
+      <section className={css.content}>
+        {hasNotes ? (
+          <>
+            <NoteList notes={notes} />
+          </>
+        ) : (
+          <div style={{ textAlign: "center", padding: "40px" }}>
+            <p>No notes found for this tag yet.</p>
+            <small>Create your first note with this tag to see it here.</small>
+          </div>
+        )}
       </section>
 
       {isModalOpen && (
