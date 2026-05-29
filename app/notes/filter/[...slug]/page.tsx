@@ -1,6 +1,6 @@
 import { isValidTag } from "@/lib/api";
 import { notFound } from "next/navigation";
-import FilterNotesClient from "./FilterNotesClient";
+import FilterNotesClient from "./Notes.client";
 import {
   HydrationBoundary,
   QueryClient,
